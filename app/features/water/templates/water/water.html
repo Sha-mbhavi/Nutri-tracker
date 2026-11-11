@@ -1,1 +1,111 @@
-{% extends 'base.html' %}{% block content %}<section class="page narrow"><div class="page-heading"><div><div class="eyebrow">HYDRATION</div><h1>Water today</h1></div><strong>{{ total|round|int }} ml</strong></div><form method="post" class="card quick-add"><label>Amount (ml)<input name="quantity" type="number" min="1" value="250"></label><button class="button">Add water</button></form><div class="card water-list"><h3>Recent entries</h3>{% for entry in entries %}<div><span>{{ entry.intake_datetime.strftime('%d %b · %H:%M') }}</span><b>{{ entry.quantity_ml|round|int }} ml</b></div>{% else %}<p>No water logged yet.</p>{% endfor %}</div></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Hydration Tracking · NutriTrack{% endblock %}
+
+{% block content %}
+<section class="page narrow">
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">DAILY HYDRATION TRACKER</div>
+      <h1>Hydration</h1>
+    </div>
+    <div style="text-align: right;">
+      <strong style="font-size: 32px; font-family: 'Newsreader', serif; color: var(--ink);">{{ total|round|int }}</strong>
+      <span class="muted" style="font-size: 16px;">ml today</span>
+    </div>
+  </div>
+
+  <!-- Primary Hydration Card -->
+  <div class="card" style="margin-bottom: 24px;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
+      <span class="eyebrow">QUICK LOG PRESETS</span>
+      <small class="muted">1-Click Hydration Logging</small>
+    </div>
+
+    <!-- Quick Log Action Grid -->
+    <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px;">
+      <button type="submit" name="quantity" value="250" class="button secondary" style="padding: 14px 10px; flex-direction: column; gap: 4px;">
+        <span style="font-size: 16px; font-weight: 700;">+250 ml</span>
+        <small class="muted" style="font-weight: 400; font-size: 11px;">Glass of Water</small>
+      </button>
+
+      <button type="submit" name="quantity" value="350" class="button secondary" style="padding: 14px 10px; flex-direction: column; gap: 4px;">
+        <span style="font-size: 16px; font-weight: 700;">+350 ml</span>
+        <small class="muted" style="font-weight: 400; font-size: 11px;">Mug / Herbal Tea</small>
+      </button>
+
+      <button type="submit" name="quantity" value="500" class="button secondary" style="padding: 14px 10px; flex-direction: column; gap: 4px;">
+        <span style="font-size: 16px; font-weight: 700;">+500 ml</span>
+        <small class="muted" style="font-weight: 400; font-size: 11px;">Standard Bottle</small>
+      </button>
+
+      <button type="submit" name="quantity" value="750" class="button secondary" style="padding: 14px 10px; flex-direction: column; gap: 4px;">
+        <span style="font-size: 16px; font-weight: 700;">+750 ml</span>
+        <small class="muted" style="font-weight: 400; font-size: 11px;">Sports Bottle</small>
+      </button>
+
+      <button type="submit" name="quantity" value="1000" class="button accent" style="padding: 14px 10px; flex-direction: column; gap: 4px;">
+        <span style="font-size: 16px; font-weight: 700;">+1,000 ml</span>
+        <small style="color: rgba(255,255,255,0.8); font-weight: 400; font-size: 11px;">Large Flask</small>
+      </button>
+    </form>
+
+    <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 20px 0;">
+
+    <!-- Custom Entry Form -->
+    <div class="eyebrow" style="margin-bottom: 10px;">CUSTOM AMOUNT</div>
+    <form method="post" style="display: flex; gap: 12px; align-items: flex-end;">
+      <label style="flex: 1; margin: 0;">
+        Volume in milliliters
+        <input name="quantity" type="number" min="1" max="5000" step="10" placeholder="e.g. 400" required>
+      </label>
+      <button type="submit" class="button" style="height: 42px;">Record Fluid</button>
+    </form>
+  </div>
+
+  <!-- Hydration Milestones & Insights -->
+  <div class="card" style="margin-bottom: 24px;">
+    <span class="eyebrow">HYDRATION PACING</span>
+    <h3 style="margin: 4px 0 14px 0; font-size: 18px;">Recommended Daily Milestones</h3>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;">
+      <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        <small class="muted">Morning</small>
+        <div style="font-weight: 700; color: var(--ink); margin-top: 4px;">500 ml</div>
+      </div>
+      <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        <small class="muted">Midday</small>
+        <div style="font-weight: 700; color: var(--ink); margin-top: 4px;">1,200 ml</div>
+      </div>
+      <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        <small class="muted">Afternoon</small>
+        <div style="font-weight: 700; color: var(--ink); margin-top: 4px;">2,000 ml</div>
+      </div>
+      <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        <small class="muted">Target</small>
+        <div style="font-weight: 700; color: var(--jade); margin-top: 4px;">2,500+ ml</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Entries List -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <span class="eyebrow">TODAY'S LOG ENTRIES</span>
+      <small class="muted">{{ entries|length }} records</small>
+    </div>
+
+    {% for entry in entries %}
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+      <div>
+        <strong style="color: var(--ink); font-size: 15px;">{{ entry.quantity_ml|round|int }} ml</strong>
+        <span class="muted" style="font-size: 12px; margin-left: 8px;">{{ entry.intake_datetime.strftime('%I:%M %p · %d %b') }}</span>
+      </div>
+      <form method="post" action="{{ url_for('water.delete_water', entry_id=entry.id) }}" style="margin: 0;">
+        <button type="submit" class="button small secondary" style="padding: 4px 10px; font-size: 11px; border-color: var(--border);">Remove</button>
+      </form>
+    </div>
+    {% else %}
+    <p class="muted" style="text-align: center; padding: 24px 0; margin: 0;">No fluid intake recorded yet today. Use the presets above to start logging.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,1 +1,209 @@
-{% extends 'base.html' %}{% block content %}<section class="page"><div class="page-heading"><div><div class="eyebrow">GENTLE PROMPTS</div><h1>Reminders</h1></div></div><div class="split"><form method="post" class="card form-stack"><h3>New reminder</h3><label>Title<input name="title" required placeholder="Drink water"></label><label>Type<select name="reminder_type"><option>Water</option><option>Meal</option><option>General</option></select></label><label>Time<input name="reminder_time" type="time" required></label><label>Repeat<select name="repeat_rule"><option>Daily</option><option>Weekdays</option><option>Once</option></select></label><button class="button">Create reminder</button></form><div>{% for reminder in reminders %}<article class="card reminder"><div><span>{{ reminder.reminder_type }}</span><h3>{{ reminder.title }}</h3><p>{{ reminder.reminder_time.strftime('%H:%M') }} · {{ reminder.repeat_rule }}</p></div><b>{{ 'On' if reminder.is_active else 'Off' }}</b></article>{% else %}<article class="card empty"><p>Browser reminders are only shown while the app is active.</p></article>{% endfor %}</div></div></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Reminders & Daily Insights · NutriTrack{% endblock %}
+
+{% block content %}
+<section class="page">
+  <!-- Page Header -->
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">PROACTIVE WELLNESS · REMINDERS & INSIGHTS</div>
+      <h1>Reminders</h1>
+      <p style="color: var(--muted); margin: 6px 0 0 0; font-size: 15px;">
+        Real-time metabolic alerts, clinical nutrition guidance, and scheduled routine prompts.
+      </p>
+    </div>
+    <div>
+      <a href="{{ url_for('dashboard.dashboard') }}" class="button small secondary">&larr; Return to Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Section 1: Active Daily Health Reminders (Live Feedback) -->
+  {% if insights_data %}
+  <div style="margin-bottom: 36px;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px;">
+      <div>
+        <span class="eyebrow">TODAY'S LIVE HEALTH STATUS</span>
+        <h2 style="font-family: 'Newsreader', Georgia, serif; font-size: 24px; margin: 2px 0 0 0;">Active Physiological Alerts</h2>
+      </div>
+      <span style="font-size: 13px; color: var(--muted);">Auto-calculated from today's intake</span>
+    </div>
+
+    <div class="reminder-grid">
+      <!-- Protein Alert Card -->
+      {% set p_rem = insights_data.protein_reminder %}
+      <article class="card reminder-box alert-{{ p_rem.severity }}" style="margin: 0;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="reminder-badge badge-{{ p_rem.severity }}">{{ p_rem.badge }}</span>
+            <span style="font-size: 12px; font-weight: 600; color: var(--muted);">{{ p_rem.percentage }}% Target</span>
+          </div>
+
+          <div class="reminder-stat-row">
+            <span class="reminder-stat-number">{{ p_rem.consumed }}g</span>
+            <span class="reminder-stat-meta">of {{ p_rem.target }}g target ({{ p_rem.remaining }}g remaining)</span>
+          </div>
+
+          <div class="progress" style="margin-bottom: 12px;">
+            <i style="width: {{ p_rem.percentage }}%;"></i>
+          </div>
+
+          {% if p_rem.is_low %}
+          <div class="reminder-warning-text">
+            <strong>Clinical Alert: Low Dietary Protein Intake.</strong> {{ p_rem.warning_text }}
+          </div>
+
+          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-secondary); margin: 14px 0 8px 0;">
+            Protein-Dense Whole Food Recommendations:
+          </div>
+          <div class="food-rec-list">
+            {% for item in p_rem.food_recommendations %}
+            <div class="food-rec-chip">
+              <strong>{{ item.name }}</strong>
+              <span>{{ item.protein }} · {{ item.calories }}</span>
+              <small style="font-size: 10px; color: var(--muted); margin-top: 2px;">{{ item.benefit }}</small>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p style="font-size: 13px; color: var(--jade); font-weight: 500; margin: 12px 0 0 0; line-height: 1.5;">
+            Optimal protein threshold achieved for today. Muscle protein synthesis and amino acid nitrogen balance are supported.
+          </p>
+          {% endif %}
+        </div>
+
+        <div style="margin-top: 20px; display: flex; gap: 8px;">
+          <a href="{{ url_for('meals.meals') }}" class="button small jade">+ Log Protein Intake</a>
+          <a href="{{ url_for('suggestions.suggestions') }}" class="button small secondary">View All Suggestions</a>
+        </div>
+      </article>
+
+      <!-- Hydration Alert Card -->
+      {% set w_rem = insights_data.water_reminder %}
+      <article class="card reminder-box alert-{{ w_rem.severity }}" style="margin: 0;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="reminder-badge badge-{{ w_rem.severity }}">{{ w_rem.badge }}</span>
+            <span style="font-size: 12px; font-weight: 600; color: var(--muted);">{{ w_rem.percentage }}% Target</span>
+          </div>
+
+          <div class="reminder-stat-row">
+            <span class="reminder-stat-number">{{ w_rem.consumed_ml }} <small style="font-size: 16px; font-weight: 400; color: var(--muted);">ml</small></span>
+            <span class="reminder-stat-meta">of {{ w_rem.target_ml }} ml target ({{ w_rem.remaining_ml }} ml remaining)</span>
+          </div>
+
+          <div class="progress" style="margin-bottom: 12px;">
+            <i style="width: {{ w_rem.percentage }}%;"></i>
+          </div>
+
+          {% if w_rem.is_low %}
+          <div class="reminder-warning-text" style="color: #1E3A8A; background: #EFF6FF; border-color: #BFDBFE;">
+            <strong>Hydration Reminder:</strong> {{ w_rem.health_note }}
+          </div>
+
+          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-secondary); margin: 14px 0 8px 0;">
+            1-Click Hydration Logging:
+          </div>
+          <form method="post" action="{{ url_for('water.water') }}" class="quick-water-form">
+            <input type="hidden" name="next" value="{{ url_for('reminders.reminders') }}">
+            <button type="submit" name="quantity" value="250" class="quick-water-btn">+250 ml (Glass)</button>
+            <button type="submit" name="quantity" value="500" class="quick-water-btn">+500 ml (Bottle)</button>
+            <button type="submit" name="quantity" value="750" class="quick-water-btn">+750 ml (Flask)</button>
+          </form>
+          {% else %}
+          <p style="font-size: 13px; color: var(--jade); font-weight: 500; margin: 12px 0 0 0; line-height: 1.5;">
+            Optimal daily hydration reached. Cellular osmotic balance and renal clearance are fully sustained.
+          </p>
+          {% endif %}
+        </div>
+
+        <div style="margin-top: 20px;">
+          <a href="{{ url_for('water.water') }}" class="button small secondary">View Hydration Logs &rarr;</a>
+        </div>
+      </article>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Section 2: Scheduled Routine Reminders -->
+  <div>
+    <div style="margin-bottom: 16px;">
+      <span class="eyebrow">AUTOMATED SCHEDULE</span>
+      <h2 style="font-family: 'Newsreader', Georgia, serif; font-size: 24px; margin: 2px 0 0 0;">Scheduled Reminders</h2>
+    </div>
+
+    <div class="split">
+      <!-- Create Reminder Form -->
+      <form method="post" class="card form-stack" style="background: var(--bg-surface);">
+        <h3 style="margin-top: 0;">Add Scheduled Reminder</h3>
+        
+        <label>
+          Reminder Title
+          <input name="title" required placeholder="e.g. Afternoon water intake">
+        </label>
+        
+        <label>
+          Category
+          <select name="reminder_type">
+            <option value="Water">Water Intake</option>
+            <option value="Meal">Meal Timing</option>
+            <option value="General">General Wellness</option>
+          </select>
+        </label>
+        
+        <label>
+          Time
+          <input name="reminder_time" type="time" required>
+        </label>
+        
+        <label>
+          Recurrence
+          <select name="repeat_rule">
+            <option value="Daily">Daily</option>
+            <option value="Weekdays">Weekdays (Mon-Fri)</option>
+            <option value="Once">Once</option>
+          </select>
+        </label>
+        
+        <button type="submit" class="button" style="margin-top: 8px;">Create Reminder</button>
+      </form>
+
+      <!-- Existing Reminders List -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        {% for reminder in reminders %}
+        <article class="card reminder" style="display: flex; justify-content: space-between; align-items: center; padding: 18px 22px;">
+          <div>
+            <span class="reminder-badge badge-{{ 'info' if reminder.reminder_type == 'Water' else 'success' }}" style="font-size: 10px;">
+              {{ reminder.reminder_type }}
+            </span>
+            <h3 style="margin: 6px 0 4px 0; font-size: 17px;">{{ reminder.title }}</h3>
+            <p style="margin: 0; font-size: 13px; color: var(--muted);">
+              {{ reminder.reminder_time.strftime('%H:%M') }} · {{ reminder.repeat_rule }}
+            </p>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <form method="post" action="{{ url_for('reminders.toggle_reminder', reminder_id=reminder.id) }}" style="display: inline;">
+              <button type="submit" class="button small {{ 'jade' if reminder.is_active else 'secondary' }}" style="min-width: 60px;">
+                {{ 'Active' if reminder.is_active else 'Paused' }}
+              </button>
+            </form>
+            <form method="post" action="{{ url_for('reminders.delete_reminder', reminder_id=reminder.id) }}" style="display: inline;" onsubmit="return confirm('Delete this reminder?');">
+              <button type="submit" class="button small secondary" style="color: #991B1B; border-color: #FCA5A5;">
+                Delete
+              </button>
+            </form>
+          </div>
+        </article>
+        {% else %}
+        <article class="card" style="text-align: center; padding: 40px 20px; color: var(--muted);">
+          <h4 style="margin: 0 0 8px 0; color: var(--ink);">No scheduled reminders set</h4>
+          <p style="font-size: 13px; margin: 0;">
+            Configure routine prompts above to receive timed reminders throughout your day.
+          </p>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

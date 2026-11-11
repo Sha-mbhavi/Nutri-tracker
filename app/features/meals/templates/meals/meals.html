@@ -1,1 +1,128 @@
-{% extends 'base.html' %}{% block content %}<section class="page"><div class="page-heading"><div><div class="eyebrow">MEAL LOG</div><h1>Today’s meals</h1></div><strong>{{ totals.calories|round(1) }} kcal</strong></div><div class="split"><form method="post" class="card form-stack"><h3>Add food</h3><label>Food<select name="food_id">{% for food in foods %}<option value="{{ food.id }}">{{ food.name }} — {{ food.calories }} kcal / 100g</option>{% endfor %}</select></label><label>Meal<select name="meal_type"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select></label><label>Quantity (grams)<input name="quantity" type="number" min="1" step="1" value="100"></label><button class="button">Add to meal</button></form><div class="meal-list">{% for meal in meals %}<article class="card meal"><h3>{{ meal.meal_type }}</h3>{% for item in meal.items %}<div><span>{{ item.food.name }}</span><b>{{ item.quantity }} g</b></div>{% else %}<p class="muted">No items yet.</p>{% endfor %}</article>{% else %}<article class="card empty"><h3>Your first meal starts here.</h3><p>Add a food to begin tracking today.</p></article>{% endfor %}</div></div></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Meal Logging & Portions · NutriTrack{% endblock %}
+
+{% block content %}
+<section class="page">
+  <!-- Heading & Today's Macro Bar -->
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">NUTRITION LOGGING · TODAY</div>
+      <h1>Daily Meals</h1>
+    </div>
+    <div style="text-align: right;">
+      <strong style="font-family: 'Newsreader', serif; font-size: 34px; color: var(--ink);">{{ totals.calories|round|int }}</strong>
+      <span class="muted" style="font-size: 16px;">kcal logged</span>
+    </div>
+  </div>
+
+  <!-- Summary Macro Pills -->
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;">
+    <div class="card" style="padding: 14px 18px;">
+      <small class="muted" style="font-size: 11px; text-transform: uppercase; font-weight: 700;">Protein</small>
+      <div style="font-size: 20px; font-weight: 700; color: var(--ink); margin-top: 2px;">{{ totals.protein|round(1) }} g</div>
+    </div>
+    <div class="card" style="padding: 14px 18px;">
+      <small class="muted" style="font-size: 11px; text-transform: uppercase; font-weight: 700;">Carbohydrates</small>
+      <div style="font-size: 20px; font-weight: 700; color: var(--ink); margin-top: 2px;">{{ totals.carbs|round(1) }} g</div>
+    </div>
+    <div class="card" style="padding: 14px 18px;">
+      <small class="muted" style="font-size: 11px; text-transform: uppercase; font-weight: 700;">Healthy Fats</small>
+      <div style="font-size: 20px; font-weight: 700; color: var(--ink); margin-top: 2px;">{{ totals.fat|round(1) }} g</div>
+    </div>
+    <div class="card" style="padding: 14px 18px;">
+      <small class="muted" style="font-size: 11px; text-transform: uppercase; font-weight: 700;">Dietary Fiber</small>
+      <div style="font-size: 20px; font-weight: 700; color: var(--ink); margin-top: 2px;">{{ totals.fiber|round(1) }} g</div>
+    </div>
+  </div>
+
+  <div class="split">
+    <!-- Log Meal Form -->
+    <form method="post" class="card form-stack" style="height: fit-content;">
+      <span class="eyebrow">RECORD FOOD</span>
+      <h3 style="margin: 4px 0 16px 0; font-size: 18px;">Add to Today's Meals</h3>
+
+      <label>
+        Select Food Item
+        <select name="food_id" required>
+          {% for food in foods %}
+          <option value="{{ food.id }}">{{ food.name }} ({{ food.calories|round|int }} kcal / 100g) — P:{{ food.protein }}g, C:{{ food.carbs }}g</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>
+        Meal Category
+        <select name="meal_type" required>
+          <option value="Breakfast">Breakfast</option>
+          <option value="Lunch">Lunch</option>
+          <option value="Dinner">Dinner</option>
+          <option value="Snack">Snack</option>
+        </select>
+      </label>
+
+      <label>
+        Portion Quantity (grams)
+        <input id="quantity-input" name="quantity" type="number" min="1" max="2500" step="1" value="100" required>
+      </label>
+
+      <!-- Portion Size Quick Presets -->
+      <div style="margin-bottom: 18px;">
+        <small class="muted" style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 11px; text-transform: uppercase;">Standard Portion Presets</small>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button type="button" class="button secondary small" style="padding: 5px 10px; font-size: 12px;" onclick="document.getElementById('quantity-input').value = 50;">50g</button>
+          <button type="button" class="button secondary small" style="padding: 5px 10px; font-size: 12px;" onclick="document.getElementById('quantity-input').value = 100;">100g (1 Serving)</button>
+          <button type="button" class="button secondary small" style="padding: 5px 10px; font-size: 12px;" onclick="document.getElementById('quantity-input').value = 150;">150g</button>
+          <button type="button" class="button secondary small" style="padding: 5px 10px; font-size: 12px;" onclick="document.getElementById('quantity-input').value = 200;">200g (Bowl)</button>
+          <button type="button" class="button secondary small" style="padding: 5px 10px; font-size: 12px;" onclick="document.getElementById('quantity-input').value = 250;">250g (Large)</button>
+        </div>
+      </div>
+
+      <button type="submit" class="button" style="width: 100%;">Save to Meal Log</button>
+    </form>
+
+    <!-- Meal Entries List -->
+    <div class="meal-list" style="display: flex; flex-direction: column; gap: 18px;">
+      {% for meal in meals %}
+      <article class="card meal" style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; margin-bottom: 12px;">
+          <div>
+            <span class="eyebrow">{{ meal.meal_type|upper }}</span>
+            <h3 style="margin: 2px 0 0 0; font-size: 18px;">{{ meal.meal_type }}</h3>
+          </div>
+          <form method="post" action="{{ url_for('meals.duplicate_meal', meal_id=meal.id) }}" style="margin: 0;">
+            <button type="submit" class="button small secondary" style="padding: 5px 12px; font-size: 12px;">Duplicate</button>
+          </form>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          {% for item in meal.items %}
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
+            <div>
+              <strong style="color: var(--ink); font-size: 14px;">{{ item.food.name }}</strong>
+              <span class="muted" style="font-size: 12px; margin-left: 6px;">({{ item.quantity|round|int }}g)</span>
+              <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">
+                {{ (item.food.calories * item.quantity / 100.0)|round|int }} kcal · P: {{ (item.food.protein * item.quantity / 100.0)|round(1) }}g · C: {{ (item.food.carbs * item.quantity / 100.0)|round(1) }}g · F: {{ (item.food.fat * item.quantity / 100.0)|round(1) }}g
+              </div>
+            </div>
+            <form method="post" action="{{ url_for('meals.delete_meal_item', item_id=item.id) }}" style="margin: 0;">
+              <button type="submit" class="button small secondary" style="padding: 4px 8px; font-size: 11px; border-color: var(--border);">Delete</button>
+            </form>
+          </div>
+          {% else %}
+          <p class="muted" style="margin: 8px 0; font-size: 13px;">No items logged for this meal.</p>
+          {% endfor %}
+        </div>
+      </article>
+      {% else %}
+      <article class="card" style="text-align: center; padding: 48px 24px;">
+        <span class="eyebrow">READY TO RECORD</span>
+        <h3 style="margin: 8px 0 10px 0; font-family: 'Newsreader', serif; font-size: 26px;">Your daily log is empty</h3>
+        <p class="muted" style="max-width: 360px; margin: 0 auto 20px auto; font-size: 14px;">
+          Select a food item and portion on the left to begin building today's nutritional record.
+        </p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

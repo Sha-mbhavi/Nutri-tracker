@@ -1,1 +1,75 @@
-{% extends 'base.html' %}{% block content %}<section class="page"><h1>Food suggestions</h1><p>{{ remaining_calories }} calories and {{ remaining_protein|round(1) }} g protein remain today. Suggestions are optional general guidance.</p><div class="dashboard-grid">{% for food in foods %}<article class="card"><h3>{{ food.name }}</h3><p>{{ food.calories }} kcal · {{ food.protein }} g protein / {{ food.serving_basis }}</p></article>{% else %}<article class="card"><p>No suitable foods are currently available.</p></article>{% endfor %}</div></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Food Suggestions & Protein Guidance · NutriTrack{% endblock %}
+
+{% block content %}
+<section class="page">
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">TARGETED NUTRITION · MEAL IDEAS</div>
+      <h1>Food Suggestions</h1>
+      <p style="color: var(--muted); margin: 6px 0 0 0; font-size: 15px;">
+        Curated whole foods aligned with your nutritional goals and active macro targets.
+      </p>
+    </div>
+    <div>
+      <a href="{{ url_for('dashboard.dashboard') }}" class="button small secondary">&larr; Return to Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Today's Deficit Overview Card -->
+  <article class="card" style="margin-bottom: 28px; background: var(--bg-surface); border-left: 4px solid var(--jade);">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <span class="eyebrow">TODAY'S REMAINING MACRO ALLOWANCE</span>
+        <h3 style="margin: 4px 0 6px 0; font-size: 20px;">
+          {{ remaining_protein|round(1) }}g Protein &middot; {{ remaining_calories|round|int }} Calories Remaining
+        </h3>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted); max-width: 680px;">
+          {% if remaining_protein > 30 %}
+          <strong>Protein Guidance:</strong> You have a notable protein deficit today. Prioritize lean meats, dairy, or legumes to prevent muscle catabolism, sustain immune cell turnover, and support recovery.
+          {% else %}
+          <strong>Pace Notice:</strong> You are within close range of your daily nutritional targets. Maintain nutrient-dense whole foods.
+          {% endif %}
+        </p>
+      </div>
+      <div>
+        <a href="{{ url_for('meals.meals') }}" class="button jade">+ Log a Meal Now</a>
+      </div>
+    </div>
+  </article>
+
+  <!-- Curated Suggestions Grid -->
+  <div>
+    <div style="margin-bottom: 16px;">
+      <span class="eyebrow">HIGH-PROTEIN WHOLE FOODS</span>
+      <h2 style="font-family: 'Newsreader', Georgia, serif; font-size: 24px; margin: 2px 0 0 0;">Recommended Items</h2>
+    </div>
+
+    <div class="dashboard-grid">
+      {% for food in foods %}
+      <article class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+            <span class="reminder-badge badge-success" style="font-size: 10px;">{{ food.category.name if food.category else 'Whole Food' }}</span>
+            <small style="font-weight: 600; color: var(--jade);">{{ food.protein }}g Protein</small>
+          </div>
+          <h3 style="margin: 0 0 6px 0; font-size: 18px; color: var(--ink);">{{ food.name }}</h3>
+          <p style="margin: 0; font-size: 13px; color: var(--muted);">
+            {{ food.calories }} kcal &middot; {{ food.carbs }}g C &middot; {{ food.fat }}g F / {{ food.serving_basis }}
+          </p>
+        </div>
+
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 12px; color: var(--muted);">Density: {{ ((food.protein * 4 / food.calories * 100)|round|int) if food.calories > 0 else 0 }}% protein</span>
+          <a href="{{ url_for('meals.meals') }}" class="button small secondary">Log Item</a>
+        </div>
+      </article>
+      {% else %}
+      <article class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--muted);">
+        <p>No suitable foods found matching your current dietary preferences.</p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

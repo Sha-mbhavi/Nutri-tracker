@@ -1,1 +1,65 @@
-{% extends 'base.html' %}{% block content %}<section class="page"><div class="page-heading"><div><div class="eyebrow">FOOD CATALOG</div><h1>Find your food</h1></div></div><form class="search-form"><input name="q" value="{{ query }}" placeholder="Search rice, yogurt, fruit…"><button class="button small">Search</button></form><div class="food-grid">{% for food in foods %}<article class="card food"><span>{{ food.category.name }}</span><h3>{{ food.name }}</h3><p>{{ food.calories }} kcal · {{ food.serving_basis }}</p><div><small>P {{ food.protein }}g</small><small>C {{ food.carbs }}g</small><small>F {{ food.fat }}g</small></div></article>{% else %}<p>No foods match that search.</p>{% endfor %}</div></section>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+<section class="page">
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">FOOD CATALOG</div>
+      <h1>Find your food</h1>
+      <p style="color: var(--ink-secondary); margin-top: 6px;">
+        Browse verified whole foods across 7 nutritional categories with complete macronutrient profiles per 100g.
+      </p>
+    </div>
+  </div>
+
+  <!-- Category Filter Tabs -->
+  <div class="category-filter-bar" role="tablist" aria-label="Food category filters">
+    <a href="{{ url_for('food_catalog.foods', category='all', q=query if query else None) }}"
+       class="category-pill {% if not selected_category or selected_category|lower == 'all' %}active{% endif %}">
+      All
+    </a>
+    {% for category in categories %}
+    <a href="{{ url_for('food_catalog.foods', category=category.name, q=query if query else None) }}"
+       class="category-pill {% if selected_category|lower == category.name|lower or selected_category == category.id|string %}active{% endif %}">
+      {{ category.name }}
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- Search Form -->
+  <form class="search-form" method="get" action="{{ url_for('food_catalog.foods') }}">
+    {% if selected_category and selected_category|lower != 'all' %}
+    <input type="hidden" name="category" value="{{ selected_category }}">
+    {% endif %}
+    <input name="q" value="{{ query }}" placeholder="Search rice, chicken, oats, salmon, avocado…">
+    <button class="button small" type="submit">Search</button>
+    {% if query or (selected_category and selected_category|lower != 'all') %}
+    <a href="{{ url_for('food_catalog.foods') }}" class="button small secondary" style="text-decoration:none; display:inline-flex; align-items:center;">Reset</a>
+    {% endif %}
+  </form>
+
+  <!-- Foods Grid -->
+  <div class="food-grid">
+    {% for food in foods %}
+    <article class="food-card card">
+      <header>
+        <span>{{ food.category.name }}</span>
+        <h3>{{ food.name }}</h3>
+        <p style="margin: 0 0 12px 0; color: var(--ink-secondary); font-size: 13px;">
+          <strong>{{ food.calories|int if food.calories == food.calories|int else food.calories }} kcal</strong> · {{ food.serving_basis }}
+        </p>
+      </header>
+      <div class="macros-row">
+        <span><strong>P:</strong> {{ food.protein }}g</span>
+        <span><strong>C:</strong> {{ food.carbs }}g</span>
+        <span><strong>F:</strong> {{ food.fat }}g</span>
+        <span><strong>Fiber:</strong> {{ food.fiber }}g</span>
+      </div>
+    </article>
+    {% else %}
+    <p style="grid-column: 1 / -1; color: var(--ink-secondary); padding: 32px 0; text-align: center;">
+      No foods match your search or filter. Try selecting another category or clearing your search.
+    </p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

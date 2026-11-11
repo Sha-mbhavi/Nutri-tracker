@@ -1,1 +1,65 @@
-{% extends 'base.html' %}{% block content %}<section class="page narrow"><h1>Nutrition reports</h1><form method="get" action="{{ url_for('reports.export_csv') }}" class="card form-grid"><label>Start date<input type="date" name="start" value="{{ today.isoformat() }}" required></label><label>End date<input type="date" name="end" value="{{ today.isoformat() }}" required></label><button class="button">Export CSV</button></form></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Reports & Data Export · NutriTrack{% endblock %}
+{% block content %}
+<section class="page">
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">DATA MANAGEMENT</div>
+      <h1>Reports & Data Export</h1>
+    </div>
+  </div>
+
+  {% if blob_result %}
+  <div class="card" style="border-left: 4px solid var(--accent); margin-bottom: 2rem; background: rgba(56, 189, 248, 0.05);">
+    <h3 style="margin-top: 0;">Cloud Storage Archival Confirmation</h3>
+    <p><strong>Provider:</strong> {{ blob_result.storage_provider }}</p>
+    <p><strong>Container:</strong> <code>{{ blob_result.container }}</code></p>
+    <p><strong>Resource URI:</strong> <a href="{{ blob_result.uri }}" target="_blank"><code>{{ blob_result.uri }}</code></a></p>
+    <p><strong>Size:</strong> {{ blob_result.size_bytes }} bytes | <strong>Timestamp:</strong> {{ blob_result.timestamp }}</p>
+    {% if blob_result.local_path %}
+    <p><small class="muted">Local storage path: <code>{{ blob_result.local_path }}</code></small></p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <div class="split">
+    <!-- Export Form -->
+    <article class="card">
+      <h3>Export Dataset</h3>
+      <p class="muted">Select a date range to export nutrition logs and meal records.</p>
+      
+      <form method="get" action="{{ url_for('reports.export_csv') }}" class="form-grid">
+        <label>Start date
+          <input type="date" name="start" value="{{ today.isoformat() }}" required>
+        </label>
+        <label>End date
+          <input type="date" name="end" value="{{ today.isoformat() }}" required>
+        </label>
+        
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem;">
+          <button type="submit" class="button">Export CSV</button>
+          <button type="submit" formaction="{{ url_for('reports.export_json') }}" class="button secondary">Export JSON</button>
+        </div>
+      </form>
+    </article>
+
+    <!-- Cloud Storage Form -->
+    <article class="card">
+      <h3>Cloud Storage Archival</h3>
+      <p class="muted">Archive historical meal records and nutrient telemetry to configured cloud blob storage.</p>
+      
+      <form method="post" action="{{ url_for('reports.archive_to_azure_blob') }}" class="form-grid">
+        <label>Start date
+          <input type="date" name="start" value="{{ today.isoformat() }}" required>
+        </label>
+        <label>End date
+          <input type="date" name="end" value="{{ today.isoformat() }}" required>
+        </label>
+        <div style="margin-top: 0.5rem;">
+          <button type="submit" class="button accent">Archive to Cloud Storage</button>
+        </div>
+      </form>
+    </article>
+  </div>
+</section>
+{% endblock %}

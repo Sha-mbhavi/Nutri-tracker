@@ -1,2 +1,175 @@
-{% extends 'base.html' %}{% block body_class %}landing{% endblock %}
-{% block content %}<section class="hero"><div><div class="eyebrow">PERSONAL NUTRITION, MADE SIMPLE</div><h1>Build healthier habits,<br><em>one day at a time.</em></h1><p>Track meals, water and daily goals in one calm, clear space designed around your life.</p><div class="hero-actions"><a class="button" href="{{ url_for('auth.register') }}">Start tracking free</a><a class="text-link" href="#features">See how it works →</a></div></div><div class="hero-card"><div class="ring"><strong>72%</strong><span>daily goal</span></div><div class="mini-stats"><b>1,840</b><span>calories eaten</span><b>2.4 L</b><span>water today</span></div></div></section><section id="features" class="features"><article><span>01</span><h3>Log meals quickly</h3><p>Search the catalog and record portions without breaking your rhythm.</p></article><article><span>02</span><h3>Understand your day</h3><p>See calories and key nutrients alongside personal targets.</p></article><article><span>03</span><h3>Stay consistent</h3><p>Use friendly reminders and weekly trends to build lasting habits.</p></article></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}NutriTrack — Precision Nutrition & Wellness Tracking{% endblock %}
+{% block body_class %}landing{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+  <div>
+    <div class="eyebrow">CONSCIOUS NUTRITION · PRECISE HABITS</div>
+    <h1>Conscious eating,<br><em>precisely tracked.</em></h1>
+    <p>
+      A calm, minimalist platform engineered to balance macronutrients, sustain daily hydration, and foster lifelong consistency through intuitive data visualization.
+    </p>
+    <div class="hero-actions">
+      <a class="button" href="{{ url_for('auth.register') }}">Start Tracking Free</a>
+      <a class="button secondary" href="{{ url_for('food_catalog.foods') }}">Explore Food Catalog</a>
+    </div>
+  </div>
+
+  <!-- Interactive Hero Visual Widget -->
+  <div class="hero-preview">
+    <div class="hero-preview-header">
+      <div>
+        <span class="eyebrow">LIVE PREVIEW · DAILY GOAL</span>
+        <div style="font-size: 16px; font-weight: 600; color: var(--ink);">Daily Intake Balance</div>
+      </div>
+      <span style="font-size: 12px; background: var(--jade-light); color: var(--jade); padding: 4px 10px; border-radius: var(--radius-full); font-weight: 600;">92% Completed</span>
+    </div>
+
+    <!-- Calories Hero Progress -->
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+        <strong style="font-family: 'Newsreader', serif; font-size: 38px; color: var(--ink);">1,920 <span style="font-size: 16px; font-family: 'DM Sans', sans-serif; color: var(--muted); font-weight: 400;">/ 2,100 kcal</span></strong>
+        <span style="font-size: 13px; color: var(--jade); font-weight: 600;">180 kcal remaining</span>
+      </div>
+      <div class="progress">
+        <i style="width: 91%;"></i>
+      </div>
+    </div>
+
+    <!-- Macro Stats Row -->
+    <div class="hero-macro-row">
+      <div class="hero-macro-stat">
+        <small>Protein</small>
+        <strong>135g</strong>
+      </div>
+      <div class="hero-macro-stat">
+        <small>Carbohydrates</small>
+        <strong>215g</strong>
+      </div>
+      <div class="hero-macro-stat">
+        <small>Healthy Fats</small>
+        <strong>58g</strong>
+      </div>
+    </div>
+
+    <!-- Mini Contribution Activity Preview -->
+    <div style="background: var(--bg-subtle); border-radius: var(--radius-sm); padding: 12px; border: 1px solid var(--border);">
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 8px;">
+        <span>Consistency Matrix</span>
+        <span>18 Weeks Active</span>
+      </div>
+      <div style="display: flex; gap: 4px; justify-content: space-between;">
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l1);"></span>
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l2);"></span>
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l4);"></span>
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l3);"></span>
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l4);"></span>
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l2);"></span>
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l4);"></span>
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l3);"></span>
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l4);"></span>
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l4);"></span>
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l3);"></span>
+        <span style="width: 14px; height: 14px; border-radius: 2px; background: var(--heat-l4);"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Three Core Pillars -->
+<section class="features-section">
+  <div class="features-header">
+    <div class="eyebrow">THOUGHTFUL DESIGN</div>
+    <h2>Engineered for simplicity, accuracy, and longevity.</h2>
+    <p class="muted" style="margin: 0; font-size: 16px;">
+      Eliminate the friction of bloated calorie apps. NutriTrack focuses on the essentials: clean inputs, relational precision, and actionable progress metrics.
+    </p>
+  </div>
+
+  <div class="features-grid">
+    <article class="feature-box">
+      <span class="feature-number">01</span>
+      <h3>Gram-Precision Portions</h3>
+      <p>
+        Accurate 100g baseline calculations scale dynamically to any portion size. Zero arbitrary serving definitions or ambiguous cups.
+      </p>
+    </article>
+
+    <article class="feature-box">
+      <span class="feature-number">02</span>
+      <h3>GitHub-Style Rhythm</h3>
+      <p>
+        Observe your nutritional dedication through a GitHub-inspired contribution heatmap that visualizes daily meal logging consistency.
+      </p>
+    </article>
+
+    <article class="feature-box">
+      <span class="feature-number">03</span>
+      <h3>Fluid Hydration Milestones</h3>
+      <p>
+        Log fluid intake with one-click presets (+250ml, +500ml) and monitor progress toward your daily hydration targets in real-time.
+      </p>
+    </article>
+  </div>
+</section>
+
+<!-- Detailed Technical Capabilities (Filler / Fuller Architecture) -->
+<section style="padding: 70px 8vw; background: var(--bg-page); border-bottom: 1px solid var(--border);">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 36px;">
+    <div>
+      <div class="eyebrow">ENTERPRISE FOUNDATION</div>
+      <h2 style="font-family: 'Newsreader', serif; font-size: 36px; margin: 6px 0 0 0;">Comprehensive Nutrition Capabilities</h2>
+    </div>
+    <a href="{{ url_for('auth.register') }}" class="button small">Create Account</a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+    <div class="card" style="padding: 22px;">
+      <div class="eyebrow">CATALOG</div>
+      <h3 style="margin: 6px 0 8px 0; font-size: 18px;">Curated Food Database</h3>
+      <p class="muted" style="font-size: 14px; margin: 0; line-height: 1.5;">
+        Verified whole foods spanning whole grains, lean proteins, vegetables, legumes, and healthy fats with complete macronutrient profiles.
+      </p>
+    </div>
+
+    <div class="card" style="padding: 22px;">
+      <div class="eyebrow">ANALYTICS</div>
+      <h3 style="margin: 6px 0 8px 0; font-size: 18px;">Historical Trends & BI</h3>
+      <p class="muted" style="font-size: 14px; margin: 0; line-height: 1.5;">
+        7-day and 30-day moving averages, weight progression, and Star Schema readiness for enterprise Power BI dashboards.
+      </p>
+    </div>
+
+    <div class="card" style="padding: 22px;">
+      <div class="eyebrow">DATA EXPORT</div>
+      <h3 style="margin: 6px 0 8px 0; font-size: 18px;">Cloud Storage Archival</h3>
+      <p class="muted" style="font-size: 14px; margin: 0; line-height: 1.5;">
+        Export structured CSVs, semi-structured JSON documents for Azure Cosmos DB, or archive directly to Azure Blob Storage containers.
+      </p>
+    </div>
+
+    <div class="card" style="padding: 22px;">
+      <div class="eyebrow">SECURITY</div>
+      <h3 style="margin: 6px 0 8px 0; font-size: 18px;">OAuth & Access Control</h3>
+      <p class="muted" style="font-size: 14px; margin: 0; line-height: 1.5;">
+        Role-based access control (RBAC), OAuth single sign-on, salted PBKDF2 hashing, and immutable security audit logs.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Footer Banner -->
+<section style="padding: 60px 8vw; background: var(--bg-surface); text-align: center;">
+  <div class="eyebrow" style="margin-bottom: 10px;">START YOUR JOURNEY</div>
+  <h2 style="font-family: 'Newsreader', serif; font-size: 42px; margin: 0 0 16px 0;">Build healthier habits today.</h2>
+  <p class="muted" style="max-width: 480px; margin: 0 auto 28px auto; font-size: 16px;">
+    Join NutriTrack to take control of your nutrition, energy balance, and hydration in a clean, ad-free environment.
+  </p>
+  <div style="display: flex; gap: 14px; justify-content: center;">
+    <a href="{{ url_for('auth.register') }}" class="button">Get Started Free</a>
+    <a href="{{ url_for('auth.login') }}" class="button secondary">Log In to Account</a>
+  </div>
+</section>
+{% endblock %}

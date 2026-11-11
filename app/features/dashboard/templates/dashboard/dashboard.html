@@ -1,1 +1,329 @@
-{% extends 'base.html' %}{% block title %}Dashboard · NutriTrack{% endblock %}{% block content %}<section class="page"><div class="page-heading"><div><div class="eyebrow">TODAY · {{ today.strftime('%d %B') }}</div><h1>Good to see you.</h1></div><a href="{{ url_for('meals.meals') }}" class="button small">+ Log a meal</a></div><div class="dashboard-grid"><article class="card calories-card"><header><h3>Calories</h3><span>today</span></header><div class="calories"><strong>{{ totals.calories|round|int }}</strong><small>of {{ goal.target_calories|round|int if goal else 2000 }} kcal</small></div><div class="progress"><i style="width: {{ [totals.calories / (goal.target_calories if goal else 2000) * 100, 100]|min }}%"></i></div></article><article class="card water-card"><header><h3>Hydration</h3><span>goal</span></header><strong>{{ totals.water|round|int }}</strong><small>ml of {{ goal.target_water_ml|round|int if goal else 2500 }} ml</small></article><article class="card nutrients"><header><h3>Macronutrients</h3></header>{% for name,key in [('Protein','protein'),('Carbs','carbs'),('Fat','fat'),('Fiber','fiber')] %}<div class="nutrient"><span>{{ name }}</span><b>{{ totals[key]|round(1) }} g</b></div>{% endfor %}</article><article class="card week-card"><header><h3>Weekly rhythm</h3></header><div class="bars">{% for day in week %}<div><i style="height: {{ [day.calories / 20, 10]|max }}px"></i><span>{{ day.date }}</span></div>{% endfor %}</div></article></div><article class="card suggestions"><h3>Today’s gentle nudge</h3>{% for suggestion in suggestions %}<p>🌿 {{ suggestion }}</p>{% endfor %}</article></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Dashboard · NutriTrack{% endblock %}
+
+{% block content %}
+<section class="page">
+  <!-- Top Greeting & Actions -->
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">DAILY OVERVIEW · {{ today.strftime('%A, %d %B') }}</div>
+      <h1>Dashboard</h1>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <a href="{{ url_for('meals.meals') }}" class="button small">+ Log Meal</a>
+      <a href="{{ url_for('water.water') }}" class="button small secondary">Add Hydration</a>
+    </div>
+  </div>
+
+  <!-- Primary Metric Cards -->
+  <div class="dashboard-grid">
+    <!-- Daily Health Reminders & Clinical Insights Card -->
+    {% if insights_data %}
+    <article class="reminder-banner">
+      <div class="reminder-header-row">
+        <div>
+          <span class="eyebrow">CLINICAL MONITORING & DAILY REMINDERS</span>
+          <h2 style="font-family: 'Newsreader', Georgia, serif; font-size: 26px; margin: 2px 0 0 0;">Active Health Insights</h2>
+        </div>
+        <div>
+          <a href="{{ url_for('reminders.reminders') }}" class="button small secondary">Configure Reminders</a>
+        </div>
+      </div>
+
+      <div class="reminder-grid">
+        <!-- Protein Intake & Lean Mass Preservation -->
+        {% set p_rem = insights_data.protein_reminder %}
+        <div class="reminder-box alert-{{ p_rem.severity }}">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="reminder-badge badge-{{ p_rem.severity }}">{{ p_rem.badge }}</span>
+              <span style="font-size: 12px; font-weight: 600; color: var(--muted);">{{ p_rem.percentage }}% Target</span>
+            </div>
+            
+            <div class="reminder-stat-row">
+              <span class="reminder-stat-number">{{ p_rem.consumed }}g</span>
+              <span class="reminder-stat-meta">of {{ p_rem.target }}g goal ({{ p_rem.remaining }}g remaining)</span>
+            </div>
+
+            <div class="progress" style="margin-bottom: 12px;">
+              <i style="width: {{ p_rem.percentage }}%;"></i>
+            </div>
+
+            {% if p_rem.is_low %}
+            <div class="reminder-warning-text">
+              <strong>Health Alert: Inadequate Dietary Protein.</strong> {{ p_rem.warning_text }}
+            </div>
+
+            <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-secondary); margin: 12px 0 6px 0;">
+              High-Protein Recovery Recommendations:
+            </div>
+            <div class="food-rec-list">
+              {% for rec in p_rem.food_recommendations[:4] %}
+              <div class="food-rec-chip">
+                <strong>{{ rec.name }}</strong>
+                <span>{{ rec.protein }} · {{ rec.calories }}</span>
+              </div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <p style="font-size: 13px; color: var(--jade); font-weight: 500; margin: 12px 0 0 0; line-height: 1.5;">
+              Optimal protein intake maintained. Essential amino acids are sufficient to preserve lean skeletal mass and support tissue repair.
+            </p>
+            {% endif %}
+          </div>
+
+          <div style="margin-top: 16px; display: flex; gap: 8px;">
+            <a href="{{ url_for('meals.meals') }}" class="button small jade">+ Log Protein-Dense Food</a>
+            <a href="{{ url_for('suggestions.suggestions') }}" class="button small secondary">Food Suggestions</a>
+          </div>
+        </div>
+
+        <!-- Hydration Balance & Cellular Vitality -->
+        {% set w_rem = insights_data.water_reminder %}
+        <div class="reminder-box alert-{{ w_rem.severity }}">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="reminder-badge badge-{{ w_rem.severity }}">{{ w_rem.badge }}</span>
+              <span style="font-size: 12px; font-weight: 600; color: var(--muted);">{{ w_rem.percentage }}% Target</span>
+            </div>
+
+            <div class="reminder-stat-row">
+              <span class="reminder-stat-number">{{ w_rem.consumed_ml }} <small style="font-size: 16px; font-weight: 400; color: var(--muted);">ml</small></span>
+              <span class="reminder-stat-meta">of {{ w_rem.target_ml }} ml goal ({{ w_rem.remaining_ml }} ml remaining)</span>
+            </div>
+
+            <div class="progress" style="margin-bottom: 12px;">
+              <i style="width: {{ w_rem.percentage }}%;"></i>
+            </div>
+
+            {% if w_rem.is_low %}
+            <div class="reminder-warning-text" style="color: #1E3A8A; background: #EFF6FF; border-color: #BFDBFE;">
+              <strong>Hydration Notice:</strong> {{ w_rem.health_note }}
+            </div>
+
+            <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-secondary); margin: 12px 0 6px 0;">
+              Quick Log Water Intake:
+            </div>
+            <form method="post" action="{{ url_for('water.water') }}" class="quick-water-form">
+              <input type="hidden" name="next" value="{{ url_for('dashboard.dashboard') }}">
+              <button type="submit" name="quantity" value="250" class="quick-water-btn">+250 ml (Glass)</button>
+              <button type="submit" name="quantity" value="500" class="quick-water-btn">+500 ml (Bottle)</button>
+              <button type="submit" name="quantity" value="750" class="quick-water-btn">+750 ml (Flask)</button>
+            </form>
+            {% else %}
+            <p style="font-size: 13px; color: var(--jade); font-weight: 500; margin: 12px 0 0 0; line-height: 1.5;">
+              Optimal daily hydration achieved. Renal metabolic clearance and cellular osmotic balance are supported.
+            </p>
+            {% endif %}
+          </div>
+
+          <div style="margin-top: 16px;">
+            <a href="{{ url_for('water.water') }}" class="button small secondary">Hydration History &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </article>
+    {% endif %}
+
+    <!-- Calories Target Card -->
+    <article class="card calories-card">
+      <div class="calories-header">
+        <span class="eyebrow">ENERGY INTAKE</span>
+        <small class="muted">Daily Goal: {{ goal.target_calories|round|int if goal else 2000 }} kcal</small>
+      </div>
+      <div class="calories-hero">
+        <strong>{{ totals.calories|round|int }}</strong>
+        <span>kcal consumed</span>
+      </div>
+      
+      {% set target_cals = goal.target_calories if goal else 2000 %}
+      {% set pct = [ (totals.calories / target_cals * 100), 100 ]|min|round|int %}
+      <div class="progress">
+        <i style="width: {{ pct }}%;"></i>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 13px;">
+        <span class="muted">{{ pct }}% of daily budget</span>
+        {% if totals.calories <= target_cals %}
+        <span style="color: var(--jade); font-weight: 600;">{{ (target_cals - totals.calories)|round|int }} kcal remaining</span>
+        {% else %}
+        <span style="color: #9A3412; font-weight: 600;">{{ (totals.calories - target_cals)|round|int }} kcal over target</span>
+        {% endif %}
+      </div>
+    </article>
+
+    <!-- Hydration Card with Quick-Add -->
+    <article class="card water-card">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <span class="eyebrow">HYDRATION</span>
+        <small class="muted">Target: {{ goal.target_water_ml|round|int if goal else 2500 }} ml</small>
+      </div>
+      <strong>{{ totals.water|round|int }} <span style="font-size: 20px; color: var(--muted); font-weight: 400;">ml</span></strong>
+      
+      {% set water_target = goal.target_water_ml if goal else 2500 %}
+      {% set water_pct = [ (totals.water / water_target * 100), 100 ]|min|round|int %}
+      <div class="progress" style="margin-top: 14px;">
+        <i style="width: {{ water_pct }}%;"></i>
+      </div>
+      <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">
+        {{ water_pct }}% of target reached
+      </div>
+
+      <!-- Quick Add Hydration Buttons -->
+      <form method="post" action="{{ url_for('water.water') }}" class="hydration-quick-pills">
+        <button type="submit" name="quantity" value="250" class="hydration-pill-btn">+250 ml</button>
+        <button type="submit" name="quantity" value="500" class="hydration-pill-btn">+500 ml</button>
+        <button type="submit" name="quantity" value="750" class="hydration-pill-btn">+750 ml</button>
+      </form>
+    </article>
+
+    <!-- Macronutrients Breakdown Card -->
+    <article class="card">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+        <span class="eyebrow">MACRONUTRIENTS</span>
+        <small class="muted">Energy Distribution</small>
+      </div>
+
+      <!-- Macro Ratio Distribution Bar -->
+      <div style="display: flex; height: 8px; border-radius: var(--radius-full); overflow: hidden; background: var(--bg-subtle); margin-bottom: 14px; border: 1px solid var(--border);">
+        <div style="width: {{ macro_pct.protein }}%; background: #0A7354;" title="Protein: {{ macro_pct.protein }}%"></div>
+        <div style="width: {{ macro_pct.carbs }}%; background: #2E8540;" title="Carbohydrates: {{ macro_pct.carbs }}%"></div>
+        <div style="width: {{ macro_pct.fat }}%; background: #5C6F68;" title="Fat: {{ macro_pct.fat }}%"></div>
+      </div>
+
+      <div class="nutrient">
+        <span>Protein ({{ macro_pct.protein }}%)</span>
+        <b>{{ totals.protein|round(1) }} g <small class="muted">/ {{ goal.target_protein|round|int if goal else 120 }}g</small></b>
+      </div>
+      <div class="nutrient">
+        <span>Carbohydrates ({{ macro_pct.carbs }}%)</span>
+        <b>{{ totals.carbs|round(1) }} g <small class="muted">/ {{ goal.target_carbs|round|int if goal else 240 }}g</small></b>
+      </div>
+      <div class="nutrient">
+        <span>Healthy Fats ({{ macro_pct.fat }}%)</span>
+        <b>{{ totals.fat|round(1) }} g <small class="muted">/ {{ goal.target_fat|round|int if goal else 65 }}g</small></b>
+      </div>
+      <div class="nutrient">
+        <span>Dietary Fiber</span>
+        <b>{{ totals.fiber|round(1) }} g <small class="muted">/ {{ goal.target_fiber|round|int if goal else 30 }}g</small></b>
+      </div>
+    </article>
+
+    <!-- GitHub-Inspired Activity Heatmap Card -->
+    <article class="card heatmap-card">
+      <div class="heatmap-header">
+        <div>
+          <span class="eyebrow">CONSISTENCY & ACTIVITY</span>
+          <h3>{{ heatmap.total_entries }} meal entries logged in the last {{ heatmap.num_weeks }} weeks</h3>
+        </div>
+        <div style="font-size: 13px; color: var(--jade); font-weight: 600;">
+          {{ heatmap.streak_days }} Day Active Streak
+        </div>
+      </div>
+
+      <div class="heatmap-wrapper">
+        <div class="heatmap-table">
+          <!-- Weekday Labels Column -->
+          <div class="heatmap-days-col">
+            <span></span>
+            <span>Mon</span>
+            <span></span>
+            <span>Wed</span>
+            <span></span>
+            <span>Fri</span>
+            <span></span>
+          </div>
+
+          <!-- Heatmap Weeks & Days -->
+          <div class="heatmap-weeks-area">
+            <!-- Heatmap Grid -->
+            <div class="heatmap-grid">
+              {% for week in heatmap.weeks %}
+              <div class="heatmap-week">
+                {% for day in week %}
+                <div class="heatmap-day" 
+                     data-level="{{ day.level }}" 
+                     title="{{ day.tooltip }}"
+                     style="{% if day.is_today %}box-shadow: 0 0 0 1.5px var(--ink);{% endif %}">
+                </div>
+                {% endfor %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="heatmap-footer">
+          <span>Less</span>
+          <div class="heatmap-legend-swatches">
+            <div class="heatmap-legend-swatch" style="background: var(--heat-l0);" title="No entries"></div>
+            <div class="heatmap-legend-swatch" style="background: var(--heat-l1);" title="Light intake"></div>
+            <div class="heatmap-legend-swatch" style="background: var(--heat-l2);" title="Moderate intake"></div>
+            <div class="heatmap-legend-swatch" style="background: var(--heat-l3);" title="Substantial intake"></div>
+            <div class="heatmap-legend-swatch" style="background: var(--heat-l4);" title="Target achieved"></div>
+          </div>
+          <span>More</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Today's Meal Timeline -->
+    <article class="card" style="grid-column: span 2;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <span class="eyebrow">MEAL TIMELINE · TODAY</span>
+        <a href="{{ url_for('meals.meals') }}" class="button small secondary">Manage Meals</a>
+      </div>
+
+      {% if meals %}
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        {% for meal in meals %}
+        <div style="background: var(--bg-subtle); border-radius: var(--radius-sm); padding: 14px 18px; border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600; font-size: 15px; color: var(--ink);">{{ meal.meal_type }}</div>
+            <div style="font-size: 13px; color: var(--muted); margin-top: 2px;">
+              {% for item in meal.items %}
+                {{ item.food.name }} ({{ item.quantity|round|int }}g){% if not loop.last %}, {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          <div style="text-align: right;">
+            {% set meal_cals = namespace(val=0) %}
+            {% for item in meal.items %}
+              {% set meal_cals.val = meal_cals.val + (item.food.calories * item.quantity / 100.0) %}
+            {% endfor %}
+            <strong style="font-size: 16px; color: var(--ink);">{{ meal_cals.val|round|int }} kcal</strong>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="text-align: center; padding: 32px 16px; color: var(--muted);">
+        <p style="margin: 0 0 12px 0;">No meals logged yet for today.</p>
+        <a href="{{ url_for('meals.meals') }}" class="button small">+ Log your first meal</a>
+      </div>
+      {% endif %}
+    </article>
+
+    <!-- Today's Actionable Guidance / Suggestions -->
+    <article class="card suggestions-card" style="grid-column: span 1;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
+        <div>
+          <span class="eyebrow">NUTRITION GUIDANCE</span>
+          <h3 style="margin: 2px 0 0 0;">Daily Insights</h3>
+        </div>
+        <a href="{{ url_for('reminders.reminders') }}" style="font-size: 12px; font-weight: 600; color: var(--jade); text-decoration: none;">Reminders &rarr;</a>
+      </div>
+      {% for suggestion in suggestions %}
+      <div style="font-size: 13px; line-height: 1.55; color: var(--ink-secondary); padding: 10px 0; border-bottom: 1px solid var(--border-subtle);">
+        {{ suggestion }}
+      </div>
+      {% else %}
+      <p class="muted" style="font-size: 13px;">Keep up the steady pace toward your daily wellness targets.</p>
+      {% endfor %}
+      <div style="margin-top: 14px; display: flex; gap: 8px;">
+        <a href="{{ url_for('suggestions.suggestions') }}" class="button small secondary" style="width: 100%; text-align: center;">View Recommended Foods</a>
+      </div>
+    </article>
+  </div>
+</section>
+{% endblock %}

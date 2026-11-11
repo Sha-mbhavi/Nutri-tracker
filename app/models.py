@@ -8,15 +8,22 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(180), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=True)
     role = db.Column(db.String(30), nullable=False, default="user")
     is_active = db.Column(db.Boolean, nullable=False, default=True)
+    oauth_provider = db.Column(db.String(40), nullable=True)
+    oauth_id = db.Column(db.String(120), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     profile = db.relationship("Profile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     goals = db.relationship("Goal", back_populates="user", cascade="all, delete-orphan")
 
-    def set_password(self, password): self.password_hash = generate_password_hash(password)
-    def check_password(self, password): return check_password_hash(self.password_hash, password)
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        if not self.password_hash:
+            return False
+        return check_password_hash(self.password_hash, password)
 
 class Profile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -101,6 +108,7 @@ class ActivityLog(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
     action = db.Column(db.String(80), nullable=False)
     details = db.Column(db.String(500))
+    ip_address = db.Column(db.String(45))
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 

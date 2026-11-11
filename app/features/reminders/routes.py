@@ -1,8 +1,9 @@
 from datetime import datetime
-from flask import Blueprint, flash, render_template, request
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from app.extensions import db
 from app.models import Reminder
+from app.features.dashboard.services import get_daily_reminders_and_insights
 
 
 reminders_bp = Blueprint("reminders", __name__, template_folder="templates")
@@ -22,5 +23,28 @@ def reminders():
         except (KeyError, ValueError):
             db.session.rollback()
             flash("Enter a valid reminder.", "error")
+        return redirect(url_for("reminders.reminders"))
+
     entries = Reminder.query.filter_by(user_id=current_user.id).all()
-    return render_template("reminders/reminders.html", reminders=entries)
+    insights_data = get_daily_reminders_and_insights(current_user.id)
+    return render_template("reminders/reminders.html", reminders=entries, insights_data=insights_data)
+
+
+@reminders_bp.route("/reminders/<int:reminder_id>/toggle", methods=["POST"])
+@login_required
+def toggle_reminder(reminder_id):
+    reminder = Reminder.query.filter_by(id=reminder_id, user_id=current_user.id).first_or_404()
+    reminder.is_active = not reminder.is_active
+    db.session.commit()
+    flash(f"Reminder updated.", "success")
+    return redirect(url_for("reminders.reminders"))
+
+
+@reminders_bp.route("/reminders/<int:reminder_id>/delete", methods=["POST"])
+@login_required
+def delete_reminder(reminder_id):
+    reminder = Reminder.query.filter_by(id=reminder_id, user_id=current_user.id).first_or_404()
+    db.session.delete(reminder)
+    db.session.commit()
+    flash("Reminder deleted.", "success")
+    return redirect(url_for("reminders.reminders"))
