@@ -27,5 +27,5 @@ except Exception as exc:
 "
 
 # Launch Gunicorn WSGI HTTP Server
-echo "[INFO] Booting Gunicorn WSGI server: gunicorn --config gunicorn.conf.py app:app"
-exec gunicorn --config gunicorn.conf.py app:app
+echo "[INFO] Booting Gunicorn WSGI server: gunicorn --config gunicorn.conf.py wsgi:app"
+exec gunicorn --config gunicorn.conf.py wsgi:app
