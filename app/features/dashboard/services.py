@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 from collections import defaultdict
 from sqlalchemy import func
 from app.core.nutrition import item_totals, round_nutrient
@@ -10,9 +10,12 @@ def day_data(user_id, day):
     meals = Meal.query.filter_by(user_id=user_id, meal_date=day).all()
     meal_items = [item for meal in meals for item in meal.items]
     totals = item_totals(meal_items)
+    start_dt = datetime.combine(day, time.min)
+    end_dt = datetime.combine(day, time.max)
     water = db.session.query(func.coalesce(func.sum(WaterIntake.quantity_ml), 0)).filter(
         WaterIntake.user_id == user_id,
-        func.date(WaterIntake.intake_datetime) == day,
+        WaterIntake.intake_datetime >= start_dt,
+        WaterIntake.intake_datetime <= end_dt,
     ).scalar()
     goal = Goal.query.filter_by(user_id=user_id, status="active").order_by(Goal.start_date.desc()).first()
     totals["water"] = round_nutrient(water)
